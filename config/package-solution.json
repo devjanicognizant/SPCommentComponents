@@ -1,0 +1,12 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/package-solution.schema.json",
+  "solution": {
+    "name": "sp-comment-components-client-side-solution",
+    "id": "2f981971-dc95-49d7-9a4a-5497d203e7c4",
+    "version": "1.0.0.0",
+    "includeClientSideAssets": true
+  },
+  "paths": {
+    "zippedPackage": "solution/sp-comment-components.sppkg"
+  }
+}
