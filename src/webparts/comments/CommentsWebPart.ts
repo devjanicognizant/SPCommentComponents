@@ -22,6 +22,7 @@ export default class CommentsWebPart extends BaseClientSideWebPart<ICommentsWebP
       Comments,
       {
         description: this.properties.description
+        // test
       }
     );
 
