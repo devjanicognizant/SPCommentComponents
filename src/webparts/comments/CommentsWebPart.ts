@@ -12,7 +12,8 @@ import Comments from './components/Comments';
 import { ICommentsProps } from './components/ICommentsProps';
 
 export interface ICommentsWebPartProps {
-  description: string;
+  parentItemIdFieldName: string;
+  listName: string;
 }
 
 export default class CommentsWebPart extends BaseClientSideWebPart<ICommentsWebPartProps> {
@@ -21,7 +22,8 @@ export default class CommentsWebPart extends BaseClientSideWebPart<ICommentsWebP
     const element: React.ReactElement<ICommentsProps > = React.createElement(
       Comments,
       {
-        description: this.properties.description
+        parentItemIdFieldName: this.properties.parentItemIdFieldName,
+        listName: this.properties.listName
         // test
       }
     );
@@ -48,8 +50,11 @@ export default class CommentsWebPart extends BaseClientSideWebPart<ICommentsWebP
             {
               groupName: strings.BasicGroupName,
               groupFields: [
-                PropertyPaneTextField('description', {
-                  label: strings.DescriptionFieldLabel
+                PropertyPaneTextField('parentItemIdFieldName', {
+                  label: strings.ParentItemIdFieldNameFieldLabel
+                }),
+                PropertyPaneTextField('listName', {
+                  label: strings.ListNameFieldLabel
                 })
               ]
             }

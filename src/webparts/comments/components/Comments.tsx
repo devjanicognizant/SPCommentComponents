@@ -4,13 +4,15 @@ import { ICommentsProps } from './ICommentsProps';
 import { escape } from '@microsoft/sp-lodash-subset';
 import { Persona, PersonaSize, PersonaPresence } from "office-ui-fabric-react/lib/Persona";
 import Def, { MoveOperations } from "sp-pnp-js";
+import { UrlQueryParameterCollection } from '@microsoft/sp-core-library';
 
 export default class Comments extends React.Component<ICommentsProps, {
-  newComment: string,
+    newComment: string,
     messageContentTypeId: string,
     numberOfItemsToShow: number,
-    defaultNumberOfItemsToShow: number
-
+    defaultNumberOfItemsToShow: number,
+    allPosts:any[],
+    parentItemId:number
 }> {
   private textAreaObject: any;
 
@@ -22,7 +24,9 @@ export default class Comments extends React.Component<ICommentsProps, {
             newComment: "",
             messageContentTypeId: "",
             numberOfItemsToShow: 10,
-            defaultNumberOfItemsToShow: 10
+            defaultNumberOfItemsToShow: 10,
+            allPosts:[],
+            parentItemId:0
         };
 
         this._comment = this._comment.bind(this);
@@ -40,17 +44,69 @@ export default class Comments extends React.Component<ICommentsProps, {
         //             messageContentTypeId: respContentType[0].Id.StringValue
         //         });
         //     });
+        var queryParameters = new UrlQueryParameterCollection(window.location.href);
+        var parentListFieldName = this.props.parentItemIdFieldName;
+        var itemId = queryParameters.getValue("ComponentID");
+        //itemId="6";
+        if (itemId) {
+        let id = parseInt(itemId);
+        this.setState({
+            parentItemId : id
+            });
+
+            this.getAllPost(id);
+        }
+        
     }
     //Load more (3 comments)
-    private _loadMore() {
+    private _loadMore(event) {
         this.setState({
             numberOfItemsToShow: this.state.numberOfItemsToShow + 3
         });
+        event.preventDefault();
     }
+    //Get All Discussions
+    public getAllPost(itemId:any) {
+        var parentObject =  this;
+        var commentListName = this.props.listName;
+        var parentListFieldName = parentObject.props.parentItemIdFieldName;
+        Def.sp.web.lists.getByTitle(parentObject.props.listName).items
+        .select("*", "Author/UserName", "Author/SipAddress", "Author/Title", "Author/Id", "Author/EMail")
+        .expand("Author")
+        .filter(parentListFieldName+" eq '" + itemId + "'")
+        .orderBy("Created", false)
+        .getAll(4000)
+        .then((repliedPost) => {
+            repliedPost = this.sortByDate(repliedPost, "Created", false);
+            parentObject.setState({
+            allPosts : repliedPost
+            });
+        });
+    }
+    //Sort by Date
+    private sortByDate(arrayObject: any[], key, ascending: boolean = true) {
+        arrayObject.sort((a, b) => {
+        var aDate = new Date(a[key]);
+        var bDate = new Date(b[key]);
+        if (aDate > bDate) {
+            return 1;
+        }
+        if (aDate < bDate) {
+            return -1;
+        }
+        return 0;
+        });
+        if (!ascending) {
+        arrayObject = arrayObject.reverse();
+        }
+        return arrayObject;
+    }
+
+
     //Show all comments
     private _showOldPost() {
-        var items = this.props.PostItem.slice(0, this.state.numberOfItemsToShow);
-        if (this.props.PostItem.length > 0) {
+        var items = this.state.allPosts.slice(0, this.state.numberOfItemsToShow);
+        if (this.state.allPosts.length > 0) {
             return (
                 <div >
                     {items.map((post, index) => {
@@ -93,13 +149,13 @@ export default class Comments extends React.Component<ICommentsProps, {
     }
     //Load More Section
     private _loadMoreSection(items: Object[]) {
-        if (items.length < this.props.PostItem.length) {
+        if (items.length < this.state.allPosts.length) {
             return (
                 <div>
                     <div className="clearfix"></div>
                     <br />
                     <div className="row">
-                        <button className="btn btn-dark" onClick={this._loadMore}>Load More</button>
+                        <button className="btn btn-dark" onClick={(e) => this._loadMore(e)}>Load More</button>
                     </div>
                 </div>
             );
@@ -117,50 +173,26 @@ export default class Comments extends React.Component<ICommentsProps, {
     private _postComment(event) {
         if (this.state.newComment.trim() !== "") {
             let body: string = this.state.newComment.replace(/\n/g, "<br />");
-            Def.sp.web.lists.getById(this.props.listName).items.add({
+            var parentListFieldName = this.props.parentItemIdFieldName;
+            Def.sp.web.lists.getByTitle(this.props.listName).items.add({
                 "Body": body,
-                'FileSystemObjectType': 0,
-                "ContentTypeId": this.state.messageContentTypeId,
-                "ParentItemID": this.props.parentItemId
+                "ParentItemId": this.state.parentItemId
             })
-                .then((resp) => {
-                    resp.item.select("FileRef", "FileDirRef")
-                        .get()
-                        .then((respNewPost) => {
-
-                            var fileUrl = respNewPost.FileRef;
-                            var fileDirRef = respNewPost.FileDirRef;
-
-                            Def.sp.web.lists.getById(this.props.listName).items.getById(this.props.parentItemId).folder
-                                .get()
-                                .then((respParentFolder) => {
-                                    var folderUrl = respParentFolder.ServerRelativeUrl;
-                                    var moveFileUrl = fileUrl.replace(fileDirRef, folderUrl);
-                                    Def.sp.web.getFileByServerRelativeUrl(fileUrl).moveTo(moveFileUrl, MoveOperations.Overwrite)
-                                        .then((res) => {
-                                            this.textAreaObject.value = "";
-                                            this.setState({
-                                                newComment: ""
-                                            });
-                                            this.props.parentObject.getAllPost(this.props.parentObject, this.props.parentItemId);
-                                        })
-                                        .catch((error) => {
-                                            console.error(error);
-                                        });
-                                });
-                        })
-                        .catch((error) => {
-                            console.error(error);
-                        });
-
-                })
-                .catch((error) => {
-                    console.error("Error occurred while adding reply", error);
+            .then((resp) => {
+                this.textAreaObject.value = "";
+                this.setState({
+                    newComment: ""
                 });
+                this.getAllPost(this.state.parentItemId);
+            })
+            .catch((error) => {
+                console.error("Error occurred while adding reply", error);
+            });
         }
         else {
             alert("No Comments found");
         }
+        event.preventDefault();
     }
 
   public render(): React.ReactElement<ICommentsProps> {
@@ -193,14 +225,14 @@ export default class Comments extends React.Component<ICommentsProps, {
                         </div>
                         <span id="enterCommentSubmit">
                             <span>
-                                <button className="btn btn-dark" onClick={this._postComment}>Post Your Comment</button>
+                                <button className="btn btn-dark" onClick={(e) => this._postComment(e)}>Post Your Comment</button>
                             </span>
                         </span>
                     </div>
                     {/*: ""
                 }*/}
 
-                {/*{this._showOldPost()}*/}
+                {this._showOldPost()}
             </div>
         );
   }

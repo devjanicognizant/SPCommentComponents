@@ -1,7 +1,8 @@
 declare interface ICommentsWebPartStrings {
   PropertyPaneDescription: string;
   BasicGroupName: string;
-  DescriptionFieldLabel: string;
+  ParentItemIdFieldNameFieldLabel: string;
+  ListNameFieldLabel: string;
 }
 
 declare module 'CommentsWebPartStrings' {

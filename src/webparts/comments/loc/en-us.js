@@ -1,7 +1,8 @@
 define([], function() {
   return {
-    "PropertyPaneDescription": "Description",
-    "BasicGroupName": "Group Name",
-    "DescriptionFieldLabel": "Description Field"
+    "PropertyPaneDescription": "Comment Webpart properties",
+    "BasicGroupName": "Common",
+    "ParentItemIdFieldNameFieldLabel": "Parent Item Id Field Name",
+    "ListNameFieldLabel": "Source list name" 
   }
 });

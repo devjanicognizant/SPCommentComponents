@@ -1,8 +1,4 @@
 export interface ICommentsProps {
-  description: string;
-   PostItem: any[];
+  parentItemIdFieldName: string;
     listName: string;
-    parentItemId: number;
-    parentObject: any;
-    HasAddPermission: boolean;
 }

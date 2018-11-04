@@ -15,12 +15,13 @@
 
   "preconfiguredEntries": [{
     "groupId": "5c03119e-3074-46fd-976b-c60198311f70", // Other
-    "group": { "default": "Other" },
+    "group": { "default": "Common Components" },
     "title": { "default": "Comments" },
-    "description": { "default": "Reusuable webparts to add or view comments" },
+    "description": { "default": "This webpart would show all comments of the specified item. User can add new comment as well." },
     "officeFabricIconFontName": "Page",
     "properties": {
-      "description": "Comments"
+      "parentItemIdFieldName": "ParentItemId",
+      "listName":"Comments"
     }
   }]
 }
