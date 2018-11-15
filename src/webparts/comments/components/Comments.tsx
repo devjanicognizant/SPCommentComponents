@@ -154,6 +154,7 @@ export default class Comments extends React.Component<ICommentsProps, {
                 <div>
                     <div className="clearfix"></div>
                     <br />
+                    <br />
                     <div className="row">
                         <button className="btn btn-dark" onClick={(e) => this._loadMore(e)}>Load More</button>
                     </div>
@@ -223,6 +224,7 @@ export default class Comments extends React.Component<ICommentsProps, {
                         <div id="commentInput">
                             <textarea name="textComment" id="textComment" cols={50} rows={5} onChange={this._comment}></textarea>
                         </div>
+                        <br />
                         <span id="enterCommentSubmit">
                             <span>
                                 <button className="btn btn-dark" onClick={(e) => this._postComment(e)}>Post Your Comment</button>

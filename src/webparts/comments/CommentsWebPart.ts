@@ -10,6 +10,7 @@ import {
 import * as strings from 'CommentsWebPartStrings';
 import Comments from './components/Comments';
 import { ICommentsProps } from './components/ICommentsProps';
+import "bootstrap/dist/css/bootstrap.min.css";
 
 export interface ICommentsWebPartProps {
   parentItemIdFieldName: string;
