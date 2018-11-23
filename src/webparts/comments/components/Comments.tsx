@@ -1,241 +1,303 @@
+
+/*** This file is used to render comments and reply in the details page**/
+
 import * as React from 'react';
 import styles from './Comments.module.scss';
 import { ICommentsProps } from './ICommentsProps';
-import { escape } from '@microsoft/sp-lodash-subset';
-import { Persona, PersonaSize, PersonaPresence } from "office-ui-fabric-react/lib/Persona";
-import Def, { MoveOperations } from "sp-pnp-js";
+// import CONSTANTS from "../common/constants";
+import service from "../CommentsService";
+import { Persona, PersonaSize, PersonaPresence } from  "office-ui-fabric-react/lib/Persona";
 import { UrlQueryParameterCollection } from '@microsoft/sp-core-library';
+// export interface ICommentsProps {
+//     ParentMode: string;
+// }
+export interface ICommentsState {
+    comments: string;
+    replyToComments: string;
+    addedComments: any[];
+    itemID: string;
+    displayReplyBlock: string;
+    errorReply: boolean
+    errorPost: boolean;
+}
 
-export default class Comments extends React.Component<ICommentsProps, {
-    newComment: string,
-    messageContentTypeId: string,
-    numberOfItemsToShow: number,
-    defaultNumberOfItemsToShow: number,
-    allPosts:any[],
-    parentItemId:number
-}> {
-  private textAreaObject: any;
+export default class CommentReplySection extends React.Component<ICommentsProps,ICommentsState>{
+    private service =new service();
 
-    constructor(props) {
+    constructor(props:ICommentsProps, state: ICommentsState) {
         super(props);
-        this._showOldPost = this._showOldPost.bind(this);
-
         this.state = {
-            newComment: "",
-            messageContentTypeId: "",
-            numberOfItemsToShow: 10,
-            defaultNumberOfItemsToShow: 10,
-            allPosts:[],
-            parentItemId:0
-        };
+            comments: '',
+            replyToComments: '',
+            addedComments: [],
+            itemID: '',
+            displayReplyBlock: '',
+            errorReply: false,
+            errorPost: false
+        }
+        this.addCommentReply = this.addCommentReply.bind(this);
+    }
 
-        this._comment = this._comment.bind(this);
-        this._postComment = this._postComment.bind(this);
-        this._loadMore = this._loadMore.bind(this);
-        this._loadMoreSection = this._loadMoreSection.bind(this);
+    public componentDidMount() {
+
+        //get all the comments
+
+        this.getCommentsDetails();
+
     }
 
     public componentWillMount() {
-        // Def.sp.web.lists.getById(this.props.listName).contentTypes
-        //     .filter("Name eq 'Message'")
-        //     .get()
-        //     .then((respContentType) => {
-        //         this.setState({
-        //             messageContentTypeId: respContentType[0].Id.StringValue
-        //         });
-        //     });
+        this.GetItemID();
+    }
+
+    public GetItemID() {
+       // let id = GetUrlKeyValue('ItemID');
         var queryParameters = new UrlQueryParameterCollection(window.location.href);
-        var parentListFieldName = this.props.parentItemIdFieldName;
-        var itemId = queryParameters.getValue("ComponentID");
-        //itemId="6";
-        if (itemId) {
-        let id = parseInt(itemId);
+        let id= queryParameters.getValue("ItemID");
+        console.log(id);
         this.setState({
-            parentItemId : id
-            });
-
-            this.getAllPost(id);
-        }
-        
+            itemID: id
+        });
     }
-    //Load more (3 comments)
-    private _loadMore(event) {
+
+    private getCommentsDetails() {
+        let strFilter:string = "ParentID eq '" + this.state.itemID + "'";
+        let strExpand:string = "Author";
+        let strSelect:string = 'ID,ParentCommentId,Comment,Created,Author/ID,Author/Title,Author/Office,Author/EMail';
+        let filteredComments:any[] = [];
+        let listName:string = this.props.listName;
+        if (this.state.itemID !=null && listName !='') {
+            // this.service.getItemDetailsFilterBased(listName,strSelect, strFilter,strExpand).then((result:any) => {
+            //     //set to complete state and username in expand
+            //     if (result !=undefined && result.length >0) {
+            //         result.map((value,index) => {
+            //             let objFinal:any = { objParent: {}, objReplies: [] };
+
+            //             if (value.ParentCommentId == null || value.ParentCommentId =='') {
+            //                 objFinal.objParent =value;
+            //                 result.map((reply,key) => {
+            //                     if (reply.ParentCommentId ==value.ID) {
+            //                     objFinal.objReplies.push(reply);
+            //                     }
+            //                 });
+            //                 filteredComments.push(objFinal);
+            //                 console.log(filteredComments)
+            //             }
+            //         });
+            //         this.setState({
+            //             addedComments: filteredComments
+            //         });
+            //         console.log(filteredComments);
+            //     }
+            //     else {
+            //         this.setState({
+            //             addedComments: []
+            //         });
+            //     }
+            // }).catch((error) => {
+            //     console.log(error);
+            //     this.setState({
+            //         addedComments: []
+            //     });
+            // })
+        }
+    }
+
+    private addCommentReply(id:string) {
+        let commentMode:
+        string = id.split('#')[0];
+        if (commentMode =="Reply" && this.state.replyToComments =='') {
+            this.setState({
+                errorReply: true
+            });
+            return false;
+        }
+
+        else if (commentMode != "Reply" && this.state.comments =='') {
+            this.setState({
+                errorPost: true
+            });
+            return false;
+        }
+        else {
+            var item:
+            any = {};
+            let listName:string = this.props.listName;
+            item = {
+                ParentID: this.state.itemID,
+                Comment: commentMode != "Reply" ? 
+                this.state.comments :this.state.replyToComments,
+                ParentCommentId: commentMode == "Reply" ? id.split('#')[1] :''
+            }
+
+            // this.service.addItem(item, listName).then((data:any) => {
+            //     this.getCommentsDetails();
+            //     this.setState({
+            //         displayReplyBlock: '',
+            //         comments: '',
+            //         replyToComments: ''
+            //     });
+            // });
+            return true;
+        }
+    }
+
+    private setDisplayPost(id:string) {
+        id = this.state.displayReplyBlock == id ? '' : id;
         this.setState({
-            numberOfItemsToShow: this.state.numberOfItemsToShow + 3
-        });
-        event.preventDefault();
+            displayReplyBlock: id,
+            errorReply: false
+        })
     }
-    //Get All Discussions
-    public getAllPost(itemId:any) {
-        var parentObject =  this;
-        var commentListName = this.props.listName;
-        var parentListFieldName = parentObject.props.parentItemIdFieldName;
-        Def.sp.web.lists.getByTitle(parentObject.props.listName).items
-        .select("*", "Author/UserName", "Author/SipAddress", "Author/Title", "Author/Id", "Author/EMail")
-        .expand("Author")
-        .filter(parentListFieldName+" eq '" + itemId + "'")
-        .orderBy("Created", false)
-        .getAll(4000)
-        .then((repliedPost) => {
-            repliedPost = this.sortByDate(repliedPost, "Created", false);
-            parentObject.setState({
-            allPosts : repliedPost
-            });
+    //Change Control Events
+    private onChangeControls = (event:any) => {
+        var state = this.state;
+        state[event.target.name] =event.target.value;
+        this.setState(state);
+        this.setState({
+            errorPost: false,
+            errorReply: false
         });
-    }
-    //Sort by Date
-    private sortByDate(arrayObject: any[], key, ascending: boolean = true) {
-        arrayObject.sort((a, b) => {
-        var aDate = new Date(a[key]);
-        var bDate = new Date(b[key]);
-        if (aDate > bDate) {
-            return 1;
-        }
-        if (aDate < bDate) {
-            return -1;
-        }
-        return 0;
-        });
-        if (!ascending) {
-        arrayObject = arrayObject.reverse();
-        }
-        return arrayObject;
     }
 
+    public render(): React.ReactElement<ICommentsProps> {
+        let dateformate = {
+            month: 'long',
+            year: 'numeric',
+            day: '2-digit',
+            hour: 'numeric',
+            minute: 'numeric'
+        };
+        return (
+        <div id="divComments">
+        <h2
+            data-toggle="collapse"
+            data-target="#comments"
+            className="glyphicon glyphicon-plus action-btn">Comments ({this.state.addedComments.length})
+        </h2>
 
-    //Show all comments
-    private _showOldPost() {
-        var items = this.state.allPosts.slice(0, this.state.numberOfItemsToShow);
-        if (this.state.allPosts.length > 0) {
-            return (
-                <div >
-                    {items.map((post, index) => {
-                        return (
-                            <div id="allComments" key={index} className="ms-fadeIn500">
-                                <div id="UserComments">
-                                    <div className="comment-cont" key={"post" + index}>
-                                        <div id="commentDesc" dangerouslySetInnerHTML={{ __html: post.Body }}></div>
-                                        <div className="row">
-                                            <div className="col-sm-6">
-                                                <b>{"Replied by "}</b>
-                                                <a href={"sip:" + post.Author.SipAddress} style={{ textDecoration: "none" }}>
-                                                    <Persona
-                                                        style={{ cursor: "pointer" }}
-                                                        primaryText={post.Author.Title}
-                                                        size={PersonaSize.size24}
-                                                        presence={PersonaPresence.none}
-                                                        imageUrl={`/_layouts/15/userphoto.aspx?size=S&accountname=${post.Author.UserName}`}
-                                                    />
-                                                </a>
-                                            </div>
-                                            <div className="col-sm-6">
-                                                <b>{"Replied on "}</b>
-                                                {new Date(post.Created).toDateString() + " " + new Date(post.Created).toLocaleTimeString()}
-                                            </div>
-                                        </div>
-                                    </div>
+        <div id="comments" className="panel-body">
+            <div className="comment-block comment-post">
+                <div className="form-group">
+                    <label>Add comment:</label>
+                    <textarea
+                        className="form-control"
+                        value={this.state.comments}
+                        name="comments"
+                        onChange={this.onChangeControls}>
+                    </textarea>
+                    <span
+                    className={this.state.errorPost ?
+                    "showElem req" : 
+                    "hideElem"}>Please provide comments</span>
+                </div>
+                <button
+                type="button"
+                className="btn btn-default post-btn pull-right"
+                onClick={()=>this.addCommentReply("Comment#" + this.state.itemID) }>Post Comment</button>
+                <button className="btn btn-dark" onClick={(e) => this.addCommentReply("Comment#" + this.state.itemID)}>Post Your Comment</button>
+            </div>
+            {
+                this.state.addedComments.length > 0 ? 
+                <div>
+                {
+                    this.state.addedComments.map((file,index) => {
+                    return <div>
+                            <div className="comment-block">
+                                <Persona style={{cursor: "pointer" }}
+                                    primaryText={file.objParent.Author.Title}
+                                    size={PersonaSize.size24}
+                                    presence={PersonaPresence.none}
+                                    imageUrl={`/_layouts/15/userphoto.aspx?size=S&accountname=${file.objParent.Author.UserName}`}
+                                />
+                                <time
+                                    className="posted-date comment-people-dg"
+                                    title={new
+                                    Date(file.objParent.Created).toLocaleString("en-US",
+                                    dateformate)}>
+                                    {/*<Moment fromNow>{item.Created.toString()}</Moment>*/}
+                                    {new Date(file.objParent.Created).toLocaleString("en-US",
+                                    dateformate)}
+                                </time>
+                                <p
+                                    className="comment-people-dg"
+                                    dangerouslySetInnerHTML={{
+                                    __html: file.objParent.Comment }}>
+                                </p>
+                                <button
+                                    type="button"
+                                    className="btn btn-default reply-btn pull-right"
+                                    onClick={()=> { this.setDisplayPost(file.objParent.ID)}} id={file.objParent.ID +"_id"}>Reply
+                                </button>
+                                <div
+                                    className={this.state.displayReplyBlock ==
+                                    file.objParent.ID ?
+                                    "showElem child-txtarea" : 
+                                    "hideElem"}>
+                                    <textarea
+                                        className="form-control"
+                                        value={this.state.replyToComments}
+                                        name="replyToComments"
+                                        onChange={this.onChangeControls}
+                                        />
+                                    <br></br>
+                                    <span
+                                        className={this.state.displayReplyBlock ==
+                                        file.objParent.ID &&
+                                        this.state.errorReply ?
+                                        "showElem req" : 
+                                        "hideElem"}>Please provide comments</span>
+                                    <br></br>
+                                    <button
+                                        type="button"
+                                        className="btn btn-default post-btn pull-right"
+                                        onClick={()=> { this.addCommentReply("Reply#" + file.objParent.ID); }}
+                                        id={file.objParent.ID +"_id"}>Post Reply</button>
                                 </div>
                             </div>
-
-                        );
-                    })}
-                    {this._loadMoreSection(items)}
-                </div>
-            );
-        }
-        else {
-            return "";
-        }
-    }
-    //Load More Section
-    private _loadMoreSection(items: Object[]) {
-        if (items.length < this.state.allPosts.length) {
-            return (
-                <div>
-                    <div className="clearfix"></div>
-                    <br />
-                    <br />
-                    <div className="row">
-                        <button className="btn btn-dark" onClick={(e) => this._loadMore(e)}>Load More</button>
-                    </div>
-                </div>
-            );
-        }
-    }
-    //Text Area
-    private _comment(event) {
-        this.textAreaObject = event.target;
-        var comment = event.target.value;
-        this.setState({
-            newComment: comment
-        });
-    }
-    //Add comment
-    private _postComment(event) {
-        if (this.state.newComment.trim() !== "") {
-            let body: string = this.state.newComment.replace(/\n/g, "<br />");
-            var parentListFieldName = this.props.parentItemIdFieldName;
-            Def.sp.web.lists.getByTitle(this.props.listName).items.add({
-                "Body": body,
-                "ParentItemId": this.state.parentItemId
-            })
-            .then((resp) => {
-                this.textAreaObject.value = "";
-                this.setState({
-                    newComment: ""
-                });
-                this.getAllPost(this.state.parentItemId);
-            })
-            .catch((error) => {
-                console.error("Error occurred while adding reply", error);
-            });
-        }
-        else {
-            alert("No Comments found");
-        }
-        event.preventDefault();
-    }
-
-  public render(): React.ReactElement<ICommentsProps> {
-    /*return (
-      <div className={ styles.comments }>
-        <div className={ styles.container }>
-          <div className={ styles.row }>
-            <div className={ styles.column }>
-              <span className={ styles.title }>Welcome to SharePoint!</span>
-              <p className={ styles.subTitle }>Customize SharePoint experiences using Web Parts.</p>
-              <p className={ styles.description }>{escape(this.props.description)}</p>
-              <a href="https://aka.ms/spfx" className={ styles.button }>
-                <span className={ styles.label }>Learn more</span>
-              </a>
+                            {
+                                file.objReplies.length > 0 ? 
+                                <div>
+                                    {
+                                        file.objReplies.map((reply,key) => {
+                                        return  <div className="child-replies">
+                                                    <div>
+                                                        <Persona style={{cursor: "pointer" }}
+                                                            primaryText={reply.Author.Title}
+                                                            size={PersonaSize.size24}
+                                                            presence={PersonaPresence.none}
+                                                            imageUrl={`/_layouts/15/userphoto.aspx?size=S&accountname=${reply.Author.UserName}`}
+                                                        />
+                                                        <time
+                                                            className="posted-date comment-people-dg"
+                                                            title={new
+                                                            Date(reply.Created).toLocaleString("en-US",
+                                                            dateformate)}>
+                                                            {/*<Moment fromNow>{item.Created.toString()}</Moment>*/}
+                                                            {new Date(reply.Created).toLocaleString("en-US",
+                                                            dateformate)}
+                                                        </time>
+                                                    </div>
+                                                    <div>
+                                                    <p
+                                                        className="comment-people-dg"
+                                                        dangerouslySetInnerHTML={{
+                                                        __html: reply.Comment }}></p>
+                                                </div>
+                                            </div>
+                                        })
+                                    }
+                                </div> : null
+                            }
+                        </div>
+                        }
+                    )}
+                </div> : null
+            }
             </div>
-          </div>
         </div>
-      </div>
-    );*/
-
-    return (
-            <div className="">
-                {/*{this.props.HasAddPermission === true ?*/}
-                    <div>
-                        <div className="section-title">
-                            <h1 className="title">Post Your Comments</h1>
-                        </div>
-                        <div id="commentInput">
-                            <textarea name="textComment" id="textComment" cols={50} rows={5} onChange={this._comment}></textarea>
-                        </div>
-                        <br />
-                        <span id="enterCommentSubmit">
-                            <span>
-                                <button className="btn btn-dark" onClick={(e) => this._postComment(e)}>Post Your Comment</button>
-                            </span>
-                        </span>
-                    </div>
-                    {/*: ""
-                }*/}
-
-                {this._showOldPost()}
-            </div>
         );
-  }
+    }
 }
+
+
