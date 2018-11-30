@@ -1,4 +1,4 @@
 export interface ICommentsProps {
-  parentItemIdFieldName: string;
+    queryStrItemIdFieldName: string;
     listName: string;
 }

@@ -12,20 +12,25 @@ import Comments from './components/Comments';
 import { ICommentsProps } from './components/ICommentsProps';
 import "bootstrap/dist/css/bootstrap.min.css";
 
+import { SPComponentLoader } from '@microsoft/sp-loader';
+
 export interface ICommentsWebPartProps {
-  parentItemIdFieldName: string;
+  queryStrItemIdFieldName: string;
   listName: string;
 }
 
 export default class CommentsWebPart extends BaseClientSideWebPart<ICommentsWebPartProps> {
+ protected onInit(): Promise<void> {
+   SPComponentLoader.loadCss(this.context.pageContext.web.absoluteUrl+'/Style%20Library/MarketPlace/CommentsStyle.css?csf=1&e=Tn9IJN');
+   return super.onInit();
+ }
 
   public render(): void {
     const element: React.ReactElement<ICommentsProps > = React.createElement(
       Comments,
       {
-        parentItemIdFieldName: this.properties.parentItemIdFieldName,
-        listName: this.properties.listName
-        // test
+        queryStrItemIdFieldName: this.properties.queryStrItemIdFieldName,
+        listName: this.properties.listName,
       }
     );
 
@@ -51,8 +56,8 @@ export default class CommentsWebPart extends BaseClientSideWebPart<ICommentsWebP
             {
               groupName: strings.BasicGroupName,
               groupFields: [
-                PropertyPaneTextField('parentItemIdFieldName', {
-                  label: strings.ParentItemIdFieldNameFieldLabel
+                PropertyPaneTextField('pueryStrItemIdFieldName', {
+                  label: strings.QueryStrItemIdFieldLabel
                 }),
                 PropertyPaneTextField('listName', {
                   label: strings.ListNameFieldLabel

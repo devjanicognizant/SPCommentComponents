@@ -1,8 +1,8 @@
 define([], function() {
   return {
     "PropertyPaneDescription": "Comment Webpart properties",
-    "BasicGroupName": "Common",
-    "ParentItemIdFieldNameFieldLabel": "Parent Item Id Field Name",
+    "BasicGroupName": "",
+    "QueryStrItemIdFieldLabel": "Query String Parameter name to refer Item ID",
     "ListNameFieldLabel": "Source list name" 
   }
 });

@@ -1,7 +1,7 @@
 declare interface ICommentsWebPartStrings {
   PropertyPaneDescription: string;
   BasicGroupName: string;
-  ParentItemIdFieldNameFieldLabel: string;
+  QueryStrItemIdFieldLabel: string;
   ListNameFieldLabel: string;
 }
 

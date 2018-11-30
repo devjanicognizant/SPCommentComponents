@@ -5,9 +5,11 @@ import * as React from 'react';
 import styles from './Comments.module.scss';
 import { ICommentsProps } from './ICommentsProps';
 // import CONSTANTS from "../common/constants";
-import service from "../CommentsService";
+import service from "./CommentsService";
 import { Persona, PersonaSize, PersonaPresence } from  "office-ui-fabric-react/lib/Persona";
+import { Button } from  "office-ui-fabric-react/lib/Button";
 import { UrlQueryParameterCollection } from '@microsoft/sp-core-library';
+
 // export interface ICommentsProps {
 //     ParentMode: string;
 // }
@@ -53,7 +55,7 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
     public GetItemID() {
        // let id = GetUrlKeyValue('ItemID');
         var queryParameters = new UrlQueryParameterCollection(window.location.href);
-        let id= queryParameters.getValue("ItemID");
+        let id= queryParameters.getValue("ComponentID");
         console.log(id);
         this.setState({
             itemID: id
@@ -61,49 +63,50 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
     }
 
     private getCommentsDetails() {
-        let strFilter:string = "ParentID eq '" + this.state.itemID + "'";
+        let strFilter:string = "ParentId eq '" + this.state.itemID + "'";
         let strExpand:string = "Author";
         let strSelect:string = 'ID,ParentCommentId,Comment,Created,Author/ID,Author/Title,Author/Office,Author/EMail';
         let filteredComments:any[] = [];
         let listName:string = this.props.listName;
         if (this.state.itemID !=null && listName !='') {
-            // this.service.getItemDetailsFilterBased(listName,strSelect, strFilter,strExpand).then((result:any) => {
-            //     //set to complete state and username in expand
-            //     if (result !=undefined && result.length >0) {
-            //         result.map((value,index) => {
-            //             let objFinal:any = { objParent: {}, objReplies: [] };
+            this.service.getItemDetailsFilterBased(listName,strSelect, strFilter,strExpand).then((result:any) => {
+                //set to complete state and username in expand
+                if (result !=undefined && result.length >0) {
+                    result.map((value,index) => {
+                        let objFinal:any = { objParent: {}, objReplies: [] };
 
-            //             if (value.ParentCommentId == null || value.ParentCommentId =='') {
-            //                 objFinal.objParent =value;
-            //                 result.map((reply,key) => {
-            //                     if (reply.ParentCommentId ==value.ID) {
-            //                     objFinal.objReplies.push(reply);
-            //                     }
-            //                 });
-            //                 filteredComments.push(objFinal);
-            //                 console.log(filteredComments)
-            //             }
-            //         });
-            //         this.setState({
-            //             addedComments: filteredComments
-            //         });
-            //         console.log(filteredComments);
-            //     }
-            //     else {
-            //         this.setState({
-            //             addedComments: []
-            //         });
-            //     }
-            // }).catch((error) => {
-            //     console.log(error);
-            //     this.setState({
-            //         addedComments: []
-            //     });
-            // })
+                        if (value.ParentCommentId == null || value.ParentCommentId =='') {
+                            objFinal.objParent =value;
+                            result.map((reply,key) => {
+                                if (reply.ParentCommentId ==value.ID) {
+                                objFinal.objReplies.push(reply);
+                                }
+                            });
+                            filteredComments.push(objFinal);
+                            console.log(filteredComments)
+                        }
+                    });
+                    this.setState({
+                        addedComments: filteredComments
+                    });
+                    console.log(filteredComments);
+                }
+                else {
+                    this.setState({
+                        addedComments: []
+                    });
+                }
+            }).catch((error) => {
+                console.log(error);
+                this.setState({
+                    addedComments: []
+                });
+            })
         }
     }
 
     private addCommentReply(id:string) {
+        console.log('testing');
         let commentMode:
         string = id.split('#')[0];
         if (commentMode =="Reply" && this.state.replyToComments =='') {
@@ -124,20 +127,20 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
             any = {};
             let listName:string = this.props.listName;
             item = {
-                ParentID: this.state.itemID,
+                ParentId: this.state.itemID,
                 Comment: commentMode != "Reply" ? 
                 this.state.comments :this.state.replyToComments,
                 ParentCommentId: commentMode == "Reply" ? id.split('#')[1] :''
             }
 
-            // this.service.addItem(item, listName).then((data:any) => {
-            //     this.getCommentsDetails();
-            //     this.setState({
-            //         displayReplyBlock: '',
-            //         comments: '',
-            //         replyToComments: ''
-            //     });
-            // });
+            this.service.addItem(item, listName).then((data:any) => {
+                this.getCommentsDetails();
+                this.setState({
+                    displayReplyBlock: '',
+                    comments: '',
+                    replyToComments: ''
+                });
+            });
             return true;
         }
     }
@@ -192,10 +195,8 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
                     "hideElem"}>Please provide comments</span>
                 </div>
                 <button
-                type="button"
                 className="btn btn-default post-btn pull-right"
                 onClick={()=>this.addCommentReply("Comment#" + this.state.itemID) }>Post Comment</button>
-                <button className="btn btn-dark" onClick={(e) => this.addCommentReply("Comment#" + this.state.itemID)}>Post Your Comment</button>
             </div>
             {
                 this.state.addedComments.length > 0 ? 
@@ -298,6 +299,7 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
         </div>
         );
     }
+    
 }
 
 
