@@ -9,6 +9,7 @@ import service from "./CommentsService";
 import { Persona, PersonaSize, PersonaPresence } from  "office-ui-fabric-react/lib/Persona";
 import { Button } from  "office-ui-fabric-react/lib/Button";
 import { UrlQueryParameterCollection } from '@microsoft/sp-core-library';
+import LogManager from '../../LogManager';
 
 // export interface ICommentsProps {
 //     ParentMode: string;
@@ -55,17 +56,16 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
     public GetItemID() {
        // let id = GetUrlKeyValue('ItemID');
         var queryParameters = new UrlQueryParameterCollection(window.location.href);
-        let id= queryParameters.getValue("ComponentID");
-        console.log(id);
+        let id= queryParameters.getValue(this.props.queryStrItemIdFieldName);
         this.setState({
             itemID: id
         });
     }
 
     private getCommentsDetails() {
-        let strFilter:string = "ParentId eq '" + this.state.itemID + "'";
+        let strFilter:string = "ParentItemId eq '" + this.state.itemID + "'";
         let strExpand:string = "Author";
-        let strSelect:string = 'ID,ParentCommentId,Comment,Created,Author/ID,Author/Title,Author/Office,Author/EMail';
+        let strSelect:string = 'ID,ParentCommentId,CommentBody,Created,Author/ID,Author/Title,Author/Office,Author/EMail';
         let filteredComments:any[] = [];
         let listName:string = this.props.listName;
         if (this.state.itemID !=null && listName !='') {
@@ -83,13 +83,11 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
                                 }
                             });
                             filteredComments.push(objFinal);
-                            console.log(filteredComments)
                         }
                     });
                     this.setState({
                         addedComments: filteredComments
                     });
-                    console.log(filteredComments);
                 }
                 else {
                     this.setState({
@@ -97,7 +95,11 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
                     });
                 }
             }).catch((error) => {
-                console.log(error);
+                 LogManager.logException(error
+                    ,"Error occured while fetching comments for the item"
+                    ,"Comments"
+                    ,"getCommentsDetails");
+               
                 this.setState({
                     addedComments: []
                 });
@@ -106,7 +108,6 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
     }
 
     private addCommentReply(id:string) {
-        console.log('testing');
         let commentMode:
         string = id.split('#')[0];
         if (commentMode =="Reply" && this.state.replyToComments =='') {
@@ -127,8 +128,8 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
             any = {};
             let listName:string = this.props.listName;
             item = {
-                ParentId: this.state.itemID,
-                Comment: commentMode != "Reply" ? 
+                ParentItemId: this.state.itemID,
+                CommentBody: commentMode != "Reply" ? 
                 this.state.comments :this.state.replyToComments,
                 ParentCommentId: commentMode == "Reply" ? id.split('#')[1] :''
             }
@@ -195,8 +196,10 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
                     "hideElem"}>Please provide comments</span>
                 </div>
                 <button
+                type="button"
                 className="btn btn-default post-btn pull-right"
                 onClick={()=>this.addCommentReply("Comment#" + this.state.itemID) }>Post Comment</button>
+
             </div>
             {
                 this.state.addedComments.length > 0 ? 
@@ -223,7 +226,7 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
                                 <p
                                     className="comment-people-dg"
                                     dangerouslySetInnerHTML={{
-                                    __html: file.objParent.Comment }}>
+                                    __html: file.objParent.CommentBody }}>
                                 </p>
                                 <button
                                     type="button"
@@ -283,7 +286,7 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
                                                     <p
                                                         className="comment-people-dg"
                                                         dangerouslySetInnerHTML={{
-                                                        __html: reply.Comment }}></p>
+                                                        __html: reply.CommentBody }}></p>
                                                 </div>
                                             </div>
                                         })

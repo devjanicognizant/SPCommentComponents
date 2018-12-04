@@ -20,7 +20,7 @@
     "description": { "default": "This webpart would show all comments of the specified item. User can add new comment as well." },
     "officeFabricIconFontName": "Page",
     "properties": {
-      "queryStrItemId": "ComponentID",
+      "queryStrItemIdFieldName": "ComponentID",
       "listName":"Comments"
     }
   }]

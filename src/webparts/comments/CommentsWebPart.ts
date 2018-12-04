@@ -56,7 +56,7 @@ export default class CommentsWebPart extends BaseClientSideWebPart<ICommentsWebP
             {
               groupName: strings.BasicGroupName,
               groupFields: [
-                PropertyPaneTextField('pueryStrItemIdFieldName', {
+                PropertyPaneTextField('queryStrItemIdFieldName', {
                   label: strings.QueryStrItemIdFieldLabel
                 }),
                 PropertyPaneTextField('listName', {
