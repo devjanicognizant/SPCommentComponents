@@ -11,6 +11,7 @@ import * as strings from 'CommentsWebPartStrings';
 import Comments from './components/Comments';
 import { ICommentsProps } from './components/ICommentsProps';
 import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap/dist/js/bootstrap.min.js";
 
 import { SPComponentLoader } from '@microsoft/sp-loader';
 

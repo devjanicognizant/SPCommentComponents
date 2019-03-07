@@ -173,133 +173,135 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
             minute: 'numeric'
         };
         return (
-        <div id="divComments">
-        <h2
-            data-toggle="collapse"
-            data-target="#comments"
-            className="glyphicon glyphicon-plus action-btn">Comments ({this.state.addedComments.length})
-        </h2>
+            <div className="main-content"><div className="content-container"><div className=""><div className="row"><div className="col-md-12 compTitle paddingLeft0">
+                <div id="divComments">
+                <h2
+                    data-toggle="collapse"
+                    data-target="#comments"
+                    className="glyphicon action-btn">Comments ({this.state.addedComments.length})
+                </h2>
 
-        <div id="comments" className="panel-body">
-            <div className="comment-block comment-post">
-                <div className="form-group">
-                    <label>Add comment:</label>
-                    <textarea
-                        className="form-control"
-                        value={this.state.comments}
-                        name="comments"
-                        onChange={this.onChangeControls}>
-                    </textarea>
-                    <span
-                    className={this.state.errorPost ?
-                    "showElem req" : 
-                    "hideElem"}>Please provide comments</span>
-                </div>
-                <button
-                type="button"
-                className="btn btn-default post-btn pull-right"
-                onClick={()=>this.addCommentReply("Comment#" + this.state.itemID) }>Post Comment</button>
-
-            </div>
-            {
-                this.state.addedComments.length > 0 ? 
-                <div>
-                {
-                    this.state.addedComments.map((file,index) => {
-                    return <div>
-                            <div className="comment-block">
-                                <Persona style={{cursor: "pointer" }}
-                                    primaryText={file.objParent.Author.Title}
-                                    size={PersonaSize.size24}
-                                    presence={PersonaPresence.none}
-                                    imageUrl={`/_layouts/15/userphoto.aspx?size=S&accountname=${file.objParent.Author.UserName}`}
-                                />
-                                <time
-                                    className="posted-date comment-people-dg"
-                                    title={new
-                                    Date(file.objParent.Created).toLocaleString("en-US",
-                                    dateformate)}>
-                                    {/*<Moment fromNow>{item.Created.toString()}</Moment>*/}
-                                    {new Date(file.objParent.Created).toLocaleString("en-US",
-                                    dateformate)}
-                                </time>
-                                <p
-                                    className="comment-people-dg"
-                                    dangerouslySetInnerHTML={{
-                                    __html: file.objParent.CommentBody }}>
-                                </p>
-                                <button
-                                    type="button"
-                                    className="btn btn-default reply-btn pull-right"
-                                    onClick={()=> { this.setDisplayPost(file.objParent.ID)}} id={file.objParent.ID +"_id"}>Reply
-                                </button>
-                                <div
-                                    className={this.state.displayReplyBlock ==
-                                    file.objParent.ID ?
-                                    "showElem child-txtarea" : 
-                                    "hideElem"}>
-                                    <textarea
-                                        className="form-control"
-                                        value={this.state.replyToComments}
-                                        name="replyToComments"
-                                        onChange={this.onChangeControls}
-                                        />
-                                    <br></br>
-                                    <span
-                                        className={this.state.displayReplyBlock ==
-                                        file.objParent.ID &&
-                                        this.state.errorReply ?
-                                        "showElem req" : 
-                                        "hideElem"}>Please provide comments</span>
-                                    <br></br>
-                                    <button
-                                        type="button"
-                                        className="btn btn-default post-btn pull-right"
-                                        onClick={()=> { this.addCommentReply("Reply#" + file.objParent.ID); }}
-                                        id={file.objParent.ID +"_id"}>Post Reply</button>
-                                </div>
-                            </div>
-                            {
-                                file.objReplies.length > 0 ? 
-                                <div>
-                                    {
-                                        file.objReplies.map((reply,key) => {
-                                        return  <div className="child-replies">
-                                                    <div>
-                                                        <Persona style={{cursor: "pointer" }}
-                                                            primaryText={reply.Author.Title}
-                                                            size={PersonaSize.size24}
-                                                            presence={PersonaPresence.none}
-                                                            imageUrl={`/_layouts/15/userphoto.aspx?size=S&accountname=${reply.Author.UserName}`}
-                                                        />
-                                                        <time
-                                                            className="posted-date comment-people-dg"
-                                                            title={new
-                                                            Date(reply.Created).toLocaleString("en-US",
-                                                            dateformate)}>
-                                                            {/*<Moment fromNow>{item.Created.toString()}</Moment>*/}
-                                                            {new Date(reply.Created).toLocaleString("en-US",
-                                                            dateformate)}
-                                                        </time>
-                                                    </div>
-                                                    <div>
-                                                    <p
-                                                        className="comment-people-dg"
-                                                        dangerouslySetInnerHTML={{
-                                                        __html: reply.CommentBody }}></p>
-                                                </div>
-                                            </div>
-                                        })
-                                    }
-                                </div> : null
-                            }
+                <div id="comments" className="panel-body collapse">
+                    <div className="comment-block comment-post">
+                        <div className="form-group">
+                            <label>Add comment:</label>
+                            <textarea
+                                className="form-control"
+                                value={this.state.comments}
+                                name="comments"
+                                onChange={this.onChangeControls}>
+                            </textarea>
+                            <span
+                            className={this.state.errorPost ?
+                            "showElem req" : 
+                            "hideElem"}>Please provide comments</span>
                         </div>
-                        }
-                    )}
-                </div> : null
-            }
-            </div>
-        </div>
+                        <button
+                        type="button"
+                        className="btn btn-default post-btn"
+                        onClick={()=>this.addCommentReply("Comment#" + this.state.itemID) }>Post Comment</button>
+
+                    </div>
+                    {
+                        this.state.addedComments.length > 0 ? 
+                        <div>
+                        {
+                            this.state.addedComments.map((file,index) => {
+                            return <div>
+                                    <div className="comment-block">
+                                        <Persona style={{cursor: "pointer" }}
+                                            primaryText={file.objParent.Author.Title}
+                                            size={PersonaSize.size24}
+                                            presence={PersonaPresence.none}
+                                            imageUrl={`/_layouts/15/userphoto.aspx?size=S&accountname=${file.objParent.Author.UserName}`}
+                                        />
+                                        <time
+                                            className="posted-date comment-people-dg"
+                                            title={new
+                                            Date(file.objParent.Created).toLocaleString("en-US",
+                                            dateformate)}>
+                                            {/*<Moment fromNow>{item.Created.toString()}</Moment>*/}
+                                            {new Date(file.objParent.Created).toLocaleString("en-US",
+                                            dateformate)}
+                                        </time>
+                                        <p
+                                            className="comment-people-dg"
+                                            dangerouslySetInnerHTML={{
+                                            __html: file.objParent.CommentBody }}>
+                                        </p>
+                                        <button
+                                            type="button"
+                                            className="btn btn-default"
+                                            onClick={()=> { this.setDisplayPost(file.objParent.ID)}} id={file.objParent.ID +"_id"}>Reply
+                                        </button>
+                                        <div
+                                            className={this.state.displayReplyBlock ==
+                                            file.objParent.ID ?
+                                            "showElem child-txtarea" : 
+                                            "hideElem"}>
+                                            <textarea
+                                                className="form-control"
+                                                value={this.state.replyToComments}
+                                                name="replyToComments"
+                                                onChange={this.onChangeControls}
+                                                />
+                                            <br></br>
+                                            <span
+                                                className={this.state.displayReplyBlock ==
+                                                file.objParent.ID &&
+                                                this.state.errorReply ?
+                                                "showElem req" : 
+                                                "hideElem"}>Please provide comments</span>
+                                            <br></br>
+                                            <button
+                                                type="button"
+                                                className="btn btn-default post-btn"
+                                                onClick={()=> { this.addCommentReply("Reply#" + file.objParent.ID); }}
+                                                id={file.objParent.ID +"_id"}>Post Reply</button>
+                                        </div>
+                                    </div>
+                                    {
+                                        file.objReplies.length > 0 ? 
+                                        <div>
+                                            {
+                                                file.objReplies.map((reply,key) => {
+                                                return  <div className="child-replies">
+                                                            <div>
+                                                                <Persona style={{cursor: "pointer" }}
+                                                                    primaryText={reply.Author.Title}
+                                                                    size={PersonaSize.size24}
+                                                                    presence={PersonaPresence.none}
+                                                                    imageUrl={`/_layouts/15/userphoto.aspx?size=S&accountname=${reply.Author.UserName}`}
+                                                                />
+                                                                <time
+                                                                    className="posted-date comment-people-dg"
+                                                                    title={new
+                                                                    Date(reply.Created).toLocaleString("en-US",
+                                                                    dateformate)}>
+                                                                    {/*<Moment fromNow>{item.Created.toString()}</Moment>*/}
+                                                                    {new Date(reply.Created).toLocaleString("en-US",
+                                                                    dateformate)}
+                                                                </time>
+                                                            </div>
+                                                            <div>
+                                                            <p
+                                                                className="comment-people-dg"
+                                                                dangerouslySetInnerHTML={{
+                                                                __html: reply.CommentBody }}></p>
+                                                        </div>
+                                                    </div>
+                                                })
+                                            }
+                                        </div> : null
+                                    }
+                                </div>
+                                }
+                            )}
+                        </div> : null
+                    }
+                    </div>
+                </div>
+            </div></div></div></div></div>
         );
     }
     
