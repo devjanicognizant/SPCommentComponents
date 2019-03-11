@@ -57,6 +57,7 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
        // let id = GetUrlKeyValue('ItemID');
         var queryParameters = new UrlQueryParameterCollection(window.location.href);
         let id= queryParameters.getValue(this.props.queryStrItemIdFieldName);
+        //id="55";
         this.setState({
             itemID: id
         });
@@ -65,7 +66,7 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
     private getCommentsDetails() {
         let strFilter:string = "ParentItemId eq '" + this.state.itemID + "'";
         let strExpand:string = "Author";
-        let strSelect:string = 'ID,ParentCommentId,CommentBody,Created,Author/ID,Author/Title,Author/Office,Author/EMail';
+        let strSelect:string = 'ID,ParentCommentId,CommentBody,Created,Author/ID,Author/Title,Author/Office,Author/EMail,Author/UserName';
         let filteredComments:any[] = [];
         let listName:string = this.props.listName;
         if (this.state.itemID !=null && listName !='') {
@@ -85,6 +86,8 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
                             filteredComments.push(objFinal);
                         }
                     });
+                    console.log("final comment list::");
+                    console.log(filteredComments);
                     this.setState({
                         addedComments: filteredComments
                     });
@@ -175,13 +178,10 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
         return (
             <div className="main-content"><div className="content-container"><div className=""><div className="row"><div className="col-md-12 compTitle paddingLeft0">
                 <div id="divComments">
-                <h2
-                    data-toggle="collapse"
-                    data-target="#comments"
-                    className="glyphicon action-btn">Comments ({this.state.addedComments.length})
+                <h2>Comments ({this.state.addedComments.length})
                 </h2>
 
-                <div id="comments" className="panel-body collapse">
+                <div id="comments" className="panel-body">
                     <div className="comment-block comment-post">
                         <div className="form-group">
                             <label>Add comment:</label>
@@ -229,11 +229,14 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
                                             dangerouslySetInnerHTML={{
                                             __html: file.objParent.CommentBody }}>
                                         </p>
-                                        <button
+                                        {/*<button
                                             type="button"
                                             className="btn btn-default"
                                             onClick={()=> { this.setDisplayPost(file.objParent.ID)}} id={file.objParent.ID +"_id"}>Reply
-                                        </button>
+                                        </button>*/}
+                                        <a onClick={()=> { this.setDisplayPost(file.objParent.ID)}} id={file.objParent.ID +"_id"} href="#" className="reply-btn">
+                                            <i className="ms-Icon ms-Icon--Reply x-hidden-focus" title="Reply" aria-hidden="true"></i> Reply
+                                        </a>
                                         <div
                                             className={this.state.displayReplyBlock ==
                                             file.objParent.ID ?
