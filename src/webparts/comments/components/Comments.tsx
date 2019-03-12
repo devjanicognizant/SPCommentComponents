@@ -255,7 +255,6 @@ export default class CommentReplySection extends React.Component<ICommentsProps,
                                                 this.state.errorReply ?
                                                 "showElem req" : 
                                                 "hideElem"}>Please provide comments</span>
-                                            <br></br>
                                             <button
                                                 type="button"
                                                 className="btn btn-default post-btn"
